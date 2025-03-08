@@ -39,7 +39,7 @@ run project and Enjoy
 ```bash
 npm run dev
 ```
-## Step 3 Routes
+## Step 3 Routes, there are 5 actions in Step 3
 
 ### 3.1 Install Router
 
@@ -125,4 +125,97 @@ function AppRoutes() {
 }
 
 export default AppRoutes;
+```
+## Step 4 Pages
+create pages folder
+/src/pages
+
+```plaintext
+Home.jsx
+About.jsx
+```
+
+/src/pages/admin
+
+```plaintext
+Dashboard.jsx
+Manage.jsx
+```
+
+/src/pages/user
+
+```plaintext
+HomeUser.jsx
+MapUser.jsx
+```
+
+/src/pages/auth
+
+```plaintext
+Register.jsx
+Login.jsx
+```
+## Step 5 update AppRoutes.jsx
+5.1 Layout
+/src/layouts/Layout.jsx
+```jsx
+import { Outlet } from "react-router";
+
+const Layout = () => {
+  return (
+    <div>
+      Layout
+      <Outlet />
+    </div>
+  );
+};
+export default Layout;
+```
+5.2 Update code AppRoutes.jsx
+/src/routes/AppRoutes.jsx
+```jsx
+//rfce
+import React from "react";
+import { Outlet, Route, Routes } from "react-router";
+import Layout from "../layouts/Layout";
+import Home from "../pages/Home";
+import About from "../pages/About";
+import Register from "../pages/auth/Register";
+import Login from "../pages/auth/Login";
+import Dashboard from "../pages/admin/Dashboard";
+import Manage from "../pages/admin/Manage";
+import HomeUser from "../pages/user/HomeUser";
+import NotFound from "../pages/NotFound";
+
+function AppRoutes() {
+  return (
+    <>
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={ <Layout /> } >
+          <Route index element={ <Home /> } />
+          <Route path="about" element={ <About /> } />
+          <Route path="register" element={ <Register /> } />
+          <Route path="login" element={ <Login /> } />
+        </Route>
+
+        {/* Private [USER] */}
+        <Route path="user" element={ <Layout /> }>
+          <Route index element={ <HomeUser /> } />
+        </Route>
+
+        {/* Private [ADMIN] */}
+        <Route path="admin" element={ <Layout />}>
+          <Route index element={ <Dashboard /> } />
+          <Route path="manage" element={ <Manage /> } />
+        </Route>
+
+        <Route path="*" element={ <NotFound />} />
+      </Routes>
+    </>
+  );
+}
+
+export default AppRoutes;
+
 ```
