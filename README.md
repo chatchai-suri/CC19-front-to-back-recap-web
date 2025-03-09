@@ -841,8 +841,8 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 ```
-### 15.3 update Register1.jsx by using validators.jsx and zodResolver
-/src/pages/auth/Register1.jsx
+### 15.3 update Register1.jsx by using validators.jsx and zodResolver and errors
+#### 15.3.1 /src/pages/auth/Register1.jsx
 ```jsx
 // rfce
 import axios from "axios";
@@ -888,11 +888,11 @@ function Register1() {
         {/* Form  */}
         <form onSubmit={handleSubmit(hdlSubmit)}>
           <div className="flex flex-col gap-2 py-4">
-            <FormInput register={register} name="email" />
-            <FormInput register={register} name="firstname" />
-            <FormInput register={register} name="lastname" />
-            <FormInput register={register} name="password" />
-            <FormInput register={register} name="confirmPassword" />
+            <FormInput register={register} name="email" errors={errors}/>
+            <FormInput register={register} name="firstname" errors={errors}/>
+            <FormInput register={register} name="lastname" errors={errors}/>
+            <FormInput register={register} name="password" errors={errors}/>
+            <FormInput register={register} name="confirmPassword" errors={errors}/>
           </div>
           <div className="flex justify-center">
             <Buttons isSubmitting={isSubmitting} label="Register"/>
@@ -905,4 +905,26 @@ function Register1() {
 
 export default Register1;
 ```
+#### 15.3.2 /src/components/FormInput.jsx
+```jsx
+// rfce
+import React from "react";
 
+function FormInput({ register, name, errors }) {
+  console.log(errors[name]);
+  // || first true   && first false
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder={name}
+        {...register(name)}
+        className="border w-full border-gray-400 rounded-md px-1 py-2"
+      />
+      {errors[name] && <p className="text-sm text-red-500">{errors[name].message}</p>}
+    </div>
+  );
+}
+
+export default FormInput;
+```
