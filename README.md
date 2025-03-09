@@ -928,3 +928,116 @@ function FormInput({ register, name, errors }) {
 
 export default FormInput;
 ```
+## Step 16 Separate function to API, reset after register success, field password use input type password via FormInput
+### 16.1 Separate function to API
+create /src/api/auth.jsx
+```jsx
+import axios from "axios"
+
+export const actionRegister = async (value) => {
+  return await axios.post("http://localhost:8000/api/register", value)
+}
+```
+update /src/pages/Register1.jsx
+```jsx
+import { actionRegister } from "../../api/auth";
+
+function Register1() {
+  // Javascript
+  const { register, handleSubmit, formState, reset } = useForm({
+    resolver:zodResolver(registerSchema)
+  });
+  const { isSubmitting, errors } = formState;
+  console.log("errors ==== ", errors)
+
+  console.log("isSubmitting ==== ", isSubmitting);
+  const hdlSubmit = async (value) => {
+    console.log("value==== ", value);
+    //Delay
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const res = await actionRegister(value);
+      console.log("res====", res);
+      reset()
+      createAlert("success", "Register Success");
+    } catch (error) {
+      // console.log(err.response.data.message);
+      createAlert("error", error.response?.data?.message);
+    }
+  };
+```
+### 16.2 reset input form after register is success
+import reset from userForm() and update /src/pages/auth/register.jsx
+```jsx
+function Register1() {
+  // Javascript
+  const { register, handleSubmit, formState, reset } = useForm({
+    resolver:zodResolver(registerSchema)
+  });
+  const { isSubmitting, errors } = formState;
+  console.log("errors ==== ", errors)
+
+  console.log("isSubmitting ==== ", isSubmitting);
+  const hdlSubmit = async (value) => {
+    console.log("value==== ", value);
+    //Delay
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const res = await actionRegister(value);
+      console.log("res====", res);
+      reset()
+      createAlert("success", "Register Success");
+    } catch (error) {
+      // console.log(err.response.data.message);
+      createAlert("error", error.response?.data?.message);
+    }
+  };
+```
+### 16.3 input type="password" by send props to FormInput.jsx
+#### 16.3.1 receiving props at component FormInput.jsx
+```jsx
+import React from "react";
+
+function FormInput({ register, name, type="text", errors }) {
+  console.log(errors[name]);
+  // || first true   && first false
+  return (
+    <div>
+      <input
+        type={type}
+        placeholder={name}
+        {...register(name)}
+        className="border w-full border-gray-400 rounded-md px-1 py-2"
+      />
+      {errors[name] && <p className="text-sm text-red-500">{errors[name].message}</p>}
+    </div>
+  );
+}
+
+export default FormInput;
+```
+#### 16.3.2 send props type="password" from Register1.jsx
+/src/pages/auth/Register1.jsx
+```jsx
+  return (
+    <div className="flex w-full h-full justify-end">
+      {/* Card */}
+      <div className="w-64 border p-4 rounded-md">
+        <h1 className="text-xl font-bold text-center">Register1</h1>
+        {/* Form  */}
+        <form onSubmit={handleSubmit(hdlSubmit)}>
+          <div className="flex flex-col gap-2 py-4">
+            <FormInput register={register} name="email" errors={errors}/>
+            <FormInput register={register} name="firstname" errors={errors}/>
+            <FormInput register={register} name="lastname" errors={errors}/>
+            <FormInput register={register} name="password" type="password" errors={errors}/>
+            <FormInput register={register} name="confirmPassword" type="password" errors={errors}/>
+          </div>
+          <div className="flex justify-center">
+            <Buttons isSubmitting={isSubmitting} label="Register"/>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+```
