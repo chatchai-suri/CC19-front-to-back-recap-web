@@ -1,11 +1,13 @@
 // rfce
 import React from "react";
 import { Outlet } from "react-router";
+import MainNav from "../components/MainNav";
 
 function Layout() {
   return (
     <div>
-      Layout
+      <MainNav />
+      
       <Outlet />
     </div>
   );
