@@ -1,4 +1,4 @@
-import {z} from 'zod'
+import { z } from "zod";
 
 export const registerSchema = z
   .object({
@@ -12,3 +12,8 @@ export const registerSchema = z
     message: "Confirm Password is not match",
     path: ["confirmPassword"],
   });
+
+export const loginSchema = z.object({
+  email: z.string().email("invalid email"),
+  password: z.string().min(6, "Password at least 6 charecters"),
+});
