@@ -24,7 +24,7 @@ function ProtectRoutes({ el, allows }) {
         const res = await actionCurrent(token)
         const role = res.data.result.role
         // role from backend
-        // console.log("role from backend ==== ", res.data.result.role)
+        console.log("role from backend ==== ", role)
         // if (allows.includes(role)) {
         //   setOk(true)
         // } else {

@@ -1727,8 +1727,96 @@ const Sidebar = () => {
 };
 export default Sidebar;
 ```
-## Step 21 Logout
- 
+## Step 21 Logout 
+set user and token in authStore to be empty array and null respectively, then (via Logout: hdllogout) send to function checkPermission in ProtectRoutes to return unauthorize, then (via Logout: hdlLogout) navigate to "/"
+### 21.1 update Header
+src/components/admin/HeaderAdmin.jsx
+```jsx
+import Logout from "../Logout";
+
+const Header = () => {
+  return (
+    <div
+      className="bg-green-950 h-12 flex 
+    items-center text-white justify-end px-4"
+    >
+      <Logout />
+    </div>
+  );
+};
+export default Header;
+```
+### 21.2 at authStore add method actionLogout to set user and token in authStore to be empty array and null respectively
+/src/store/auth-store.jsx
+```jsx
+import { create } from "zustand";
+import { actionLogin, actionRegister } from "../api/auth";
+import { persist } from "zustand/middleware";
+
+// step 1 create store
+const authStore = (set) => ({
+  user: [],
+  token: null,
+  actionLoginWithZustand: async (value) => {
+    try {
+      const res = await actionLogin(value);
+      // console.log("Hello, Zustand!!!", res)
+      const { payload, token } = res.data;
+      console.log("payload.role ==== ", payload.role);
+      console.log("token ==== ", token);
+      set({ user: payload, token: token });
+      return { sucess: true, role: payload.role };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message };
+    }
+  },
+  actionLogout: () => {
+    set({ user: [], token: null });
+  },
+});
+
+// step 2 export store
+const useAuthStore = create(persist(authStore, { name: "auth-store" }));
+
+export default useAuthStore;
+```
+### 21.3 then (via Logout: hdllogout) send to function checkPermission in ProtectRoutes to return unauthorize, then (via Logout: hdlLogout) navigate to "/"
+create src/components/Logout.jsx
+```jsx
+//rfce
+import React from "react";
+import useAuthStore from "../store/auth-store";
+import { createAlert } from "../utils/createAlert";
+import { useNavigate } from "react-router";
+
+function Logout() {
+  //JS
+  const actionLogout = useAuthStore((state) => state.actionLogout);
+  const navigate = useNavigate()
+
+  const hdlLogout = () => {
+    console.log("Hello, Logout");
+    createAlert("success", "Logut Success")
+    actionLogout();
+    navigate("/")
+  };
+  return (
+    <div className="text-white">
+      <button
+        className="hover:cursor-pointer hover:bg-green-700"
+        onClick={hdlLogout}
+      >
+        Logout
+      </button>
+    </div>
+  );
+}
+
+export default Logout;
+```
+## Step 22 Manage user
+
+
 
 
 
