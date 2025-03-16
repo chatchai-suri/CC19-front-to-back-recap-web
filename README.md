@@ -1233,4 +1233,290 @@ and update button label to be "Login"
   <Buttons isSubmitting={isSubmitting} label="Login" />
 </div>
 ```
+## Step 18 Zustand
+### 18.1 install zustand
+```bash
+npm install zustand
+```
+### 18.2 create auth-store.jsx and presist to keep data in local storage even refresh
+/src/store/auth-store.jsx
+```jsx
+import { create } from "zustand"
+import { actionLogin, actionRegister } from "../api/auth"
+import { persist } from "zustand/middleware"
+
+// step 1 create store
+const authStore = (set) => ({
+  user: [],
+  token: null,
+  actionLoginWithZustand: async (value) => {
+    try {
+      const res = await actionLogin(value)
+      // console.log("Hello, Zustand!!!", res)
+      const { payload, token } = res.data
+      console.log("payload.role ==== ", payload.role)
+      console.log("token ==== ", token)
+      set({user: payload, token: token})
+      return{sucess: true, role: payload.role}
+    } catch (error) {
+      return{success: false, error: error.response?.data?.message}
+    }
+  }
+})
+
+
+// step 2 export store
+const useAuthStore = create(persist(authStore,{name: 'auth-store'}))
+
+export default useAuthStore
+```
+### 18.3 update login
+/scr/pages/auth/Login.jsx
+```jsx
+// rfce
+import axios from "axios";
+import React, { useState } from "react";
+import Swal from "sweetalert2";
+import { createAlert } from "../../utils/createAlert";
+import { useForm } from "react-hook-form";
+import FormInput from "../../components/FormInput";
+import Buttons from "../../components/Buttons";
+import { useNavigate } from "react-router";
+
+// validator
+import { loginSchema, registerSchema } from "../../utils/validators";
+import { zodResolver } from "@hookform/resolvers/zod"; 
+import { actionLogin, actionRegister } from "../../api/auth";
+import useAuthStore from "../../store/auth-store";
+
+function Login() {
+  // Javascript
+  // Zustand
+  const actionLoginWithZustand = useAuthStore((state) => state.actionLoginWithZustand) 
+  // console.log("test.token ==== ", test.token)
+
+  const navigate = useNavigate()
+
+  const { register, handleSubmit, formState, reset } = useForm({
+    resolver:zodResolver(loginSchema)
+  });
+  const { isSubmitting, errors } = formState;
+  console.log("errors ==== ", errors)
+
+  console.log("isSubmitting ==== ", isSubmitting);
+  const hdlSubmit = async (value) => {
+    console.log("value==== ", value);
+    //Delay
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const res = await actionLoginWithZustand(value)
+      // const res = await actionLogin(value);
+      console.log("res====", res);
+      // const role = res.data.payload.role
+      // console.log("role ==== ", role)
+      roleRedirect(res.role)
+      reset()
+      createAlert("success", "Login Success");
+    } catch (error) {
+      // console.log(err.response.data.message);
+      createAlert("error", error.response?.data?.message);
+    }
+  };
+
+  const roleRedirect = (role) => {
+    if(role === 'ADMIN'){
+      navigate('/admin')
+    }else{
+      navigate('/user')
+    }
+  }
+
+  return (
+    <div className="flex w-full h-full justify-end">
+      {/* Card */}
+      <div className="w-64 border p-4 rounded-md">
+        <h1 className="text-xl font-bold text-center">Login</h1>
+        {/* Form  */}
+        <form onSubmit={handleSubmit(hdlSubmit)}>
+          <div className="flex flex-col gap-2 py-4">
+            <FormInput register={register} name="email" errors={errors}/>
+            <FormInput register={register} name="password" type="password" errors={errors}/>
+          </div>
+          <div className="flex justify-center">
+            <Buttons isSubmitting={isSubmitting} label="Login"/>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default Login;
+```
+## Step 19 ProtectRoute
+```jsx
+const ProtectRoute = () => {
+  console.log("Protect Route js");
+  return <div>ProtectRoute</div>;
+};
+export default ProtectRoute;
+```
+### 19.1 and use
+```jsx
+<Route path="admin" element={<ProtectRoute el={<Layout/>} />}>
+  <Route index element={<Dashboard />} />
+  <Route path="manage" element={<Manage />} />
+</Route>
+```
+and update Code in ProtectRoute.jsx
+```jsx
+const ProtectRoute = ({ el }) => {
+  console.log("Protect Route js");
+  return el;
+};
+export default ProtectRoute;
+```
+### 19.2 and then send token to backend to get role from DB (to keep security that local storage allows (anyone) to edit and change role), please make sure backend "currentUser controller is available"
+```jsx
+import { useEffect } from "react";
+import { actionCurrentUser } from "../../api/auth";
+import useAuthStore from "../../store/auth-store";
+
+const ProtectRoute = ({ el }) => {
+  const token = useAuthStore((state) => state.token);
+  console.log("Protect Route js");
+  console.log(token);
+
+  useEffect(() => {
+    // code
+    checkPermission();
+  }, []);
+
+  const checkPermission = async () => {
+    try {
+      const res = await actionCurrentUser(token);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return el;
+};
+export default ProtectRoute;
+```
+### 19.3 destruct role for further use and create useState "ok" to keep status of checkPermission
+```js
+import { useEffect, useState } from "react";
+import { actionCurrentUser } from "../../api/auth";
+import useAuthStore from "../../store/auth-store";
+
+const ProtectRoute = ({ el }) => {
+  const token = useAuthStore((state) => state.token);
+  //   console.log("Protect Route js");
+  //   console.log(token);
+  const [ok, setOk] = useState(null);
+
+  useEffect(() => {
+    // code
+    checkPermission();
+  }, []);
+
+  const checkPermission = async () => {
+    try {
+      const res = await actionCurrentUser(token);
+      const role = res.data.result.role;
+      console.log(role);
+      setOk(true);
+    } catch (error) {
+      setOk(false);
+      console.log(error.response.data.message);
+    }
+  };
+  console.log(ok);
+
+  if (ok === null) {
+    return <h1>Loading...</h1>;
+  }
+  if (!ok) {
+    return <h1>Unauthorize</h1>;
+  }
+  return el;
+};
+export default ProtectRoute;
+```
+### 19.4 test in jsitor
+allows.includes("text to findout in array allows") turns "true": if found text in allows and return "false": if not found
+```js
+const allows = ["ADMIN", "USER"];
+
+console.log(allows.includes("USER"));
+console.log(allows.includes("ADMIN"));
+console.log(allows.includes("GUEST"));
+```
+### 19.4 update code in AppRoutes.jsx
+/src/routes/AppRoutes.jsx
+```jsx
+<Route
+  path="admin"
+  element={<ProtectRoute el={<LayoutAdmin />} allows={["ADMIN"]} />}
+>
+  <Route index element={<Dashboard />} />
+  <Route path="manage" element={<Manage />} />
+</Route>
+```
+### 19.5 update code in ProtectRoutes.jsx
+```jsx
+/src/routes/ProtectRoutes.jsx
+// rfce
+import React, { useEffect, useState } from "react";
+import useAuthStore from "../store/auth-store";
+import { Check, Heading1 } from "lucide-react";
+import { actionCurrent } from "../api/auth";
+
+function ProtectRoutes({ el, allows }) {
+  // console.log("Hello, Protect Route");
+  // const user = useAuthStore((state) => state.user)
+  const [ok, setOk] = useState(null)
+  const token = useAuthStore((state) => state.token)
+  // console.log("user.role ==== ", user.role )
+  // console.log("token ==== ", token)
+
+  useEffect(()=> {
+    //code
+    checkPermission()
+  },[])
+
+  const checkPermission = async () => {
+      // code body
+      console.log("check permission")
+      try {
+        const res = await actionCurrent(token)
+        const role = res.data.result.role
+        // role from backend
+        // console.log("role from backend ==== ", res.data.result.role)
+        // if (allows.includes(role)) {
+        //   setOk(true)
+        // } else {
+        //   setOk(false)
+        // }
+        setOk(allows.includes(role))
+      } catch (error) {
+        console.log(error)
+        setOk(false)
+      }
+    }
+    console.log("ok ==== ", ok)
+    if (ok === null) {
+      return <h1>Loading....</h1>
+    }
+    if (!ok) {
+      return <h1>Unauthorized!!!</h1>
+    }
+  
+  return el;
+}
+
+export default ProtectRoutes;
+```
 
