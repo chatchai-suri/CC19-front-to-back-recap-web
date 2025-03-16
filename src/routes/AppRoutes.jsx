@@ -12,6 +12,7 @@ import HomeUser from "../pages/user/HomeUser";
 import NotFound from "../pages/NotFound";
 import Register1 from "../pages/auth/Register1";
 import ProtectRoutes from "./ProtectRoutes";
+import LayoutAdmin from "../layouts/LayoutAdmin";
 
 function AppRoutes() {
   return (
@@ -32,7 +33,7 @@ function AppRoutes() {
         </Route>
 
         {/* Private [ADMIN] */}
-        <Route path="admin" element={ <ProtectRoutes el={<Layout />} allows={["ADMIN"]} />}>
+        <Route path="admin" element={ <ProtectRoutes el={<LayoutAdmin />} allows={["ADMIN"]} />}>
 
           <Route index element={ <Dashboard /> } />
           <Route path="manage" element={ <Manage /> } />

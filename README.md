@@ -1519,4 +1519,216 @@ function ProtectRoutes({ el, allows }) {
 
 export default ProtectRoutes;
 ```
+## Step 20 Layout admin
+### 20.1 create component LayoutAdmin
+/src/layouts/LayoutAdmin.jsx
+```jsx
+import { Outlet } from "react-router";
+import MainNav from "../components/MainNav";
+import Sidebar from "../components/admin/Sidebar";
+import Header from "../components/admin/Header";
+
+const LayoutAdmin = () => {
+  return (
+    <div>
+      <Sidebar />
+      <Header />
+      <Outlet />
+    </div>
+  );
+};
+export default LayoutAdmin;
+```
+### 20.2 separate sidebar VS (header + pages)
+```jsx
+import { Outlet } from "react-router";
+import MainNav from "../components/MainNav";
+import Sidebar from "../components/admin/Sidebar";
+import Header from "../components/admin/Header";
+
+const LayoutAdmin = () => {
+  return (
+    <div
+      className="flex bg-neutral-100 h-screen
+    w-screen overflow-hidden"
+    >
+      <Sidebar />
+      <div>
+        <Header />
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+export default LayoutAdmin;
+```
+### 20.3 give properties to each component and block
+#### 20.3.1 Header component: color
+```jsx
+const Header = () => {
+  return <div className="bg-green-950 h-12">Header</div>;
+};
+export default Header;
+```
+#### 20.3.2 LayoutAdmin: flex-1 to give get remain space element
+```jsx
+import { Outlet } from "react-router";
+import MainNav from "../components/MainNav";
+import Sidebar from "../components/admin/Sidebar";
+import Header from "../components/admin/Header";
+
+const LayoutAdmin = () => {
+  return (
+    <div
+      className="flex h-screen
+    w-screen"
+    >
+      <Sidebar />
+      <div className="flex flex-col flex-1">
+        <Header />
+        <div className="p-2 m-2 border flex-1 ">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
+};
+export default LayoutAdmin;
+```
+#### 20.3.3 sidebar
+```jsx
+const Sidebar = () => {
+  return <div className="bg-green-950 w-48">Sidebar</div>;
+};
+export default Sidebar;
+```
+#### 20.3.4 create link menu into sidebar
+```jsx
+import { BookDashed, User } from "lucide-react";
+import { Link } from "react-router";
+
+const Sidebar = () => {
+  return (
+    <div className="bg-green-950 w-48 text-white">
+      {/* Profile */}
+      <div className="flex flex-col items-center gap-2 py-12">
+        <User fontSize={48} />
+        <span className="text-lg">Profile</span>
+      </div>
+      {/* /Profile */}
+
+      {/* Navlink */}
+      <div className="flex-1 py-4">
+        <Link
+          className="flex items-center hover:bg-green-700 hover:duration-200
+          rounded-sm px-3 py-2 gap-2"
+          to={"/admin"}
+        >
+          <span className="text-xl">
+            <BookDashed />
+          </span>
+          Dashboard
+        </Link>
+      </div>
+      {/* /Navlink */}
+    </div>
+  );
+};
+export default Sidebar;
+```
+#### 20.3.5 separate link menu by create array of link menu list
+/src/utils/links.jsx
+```jsx
+import { CircleGauge, User2Icon } from "lucide-react";
+
+export const sidbarLink = [
+  { label: "Dashboard", link: "/admin", icon: <CircleGauge /> },
+  { label: "Manage", link: "/admin/manage", icon: <User2Icon /> },
+];
+```
+#### 20.3.6 update sidebar, by use array of link and map method
+/src/components/admin/Sidebar.jsx
+```jsx
+import { BookDashed, User } from "lucide-react";
+import { Link } from "react-router";
+import { sidbarLink } from "../../utils/links";
+
+const Sidebar = () => {
+  return (
+    <div className="bg-green-950 w-48 text-white">
+      {/* Profile */}
+      <div className="flex flex-col items-center gap-2 py-12">
+        <User fontSize={48} />
+        <span className="text-lg">Profile</span>
+      </div>
+      {/* /Profile */}
+
+      {/* Navlink */}
+      {sidbarLink.map((item) => {
+        return (
+          <div className="py-1 mx-2">
+            <Link
+              className="flex items-center hover:bg-green-700 hover:duration-200
+              rounded-sm px-3 py-1 gap-2"
+              to={item.link}
+            >
+              <span className="text-xl">{item.icon}</span>
+              {item.label}
+            </Link>
+          </div>
+        );
+      })}
+
+      {/* /Navlink */}
+    </div>
+  );
+};
+export default Sidebar;
+```
+#### 20.3.7 update sidebar with user profile data by zustand
+/src/components/admin/Sidebar.jsx
+```jsx
+import { User } from "lucide-react";
+import { Link } from "react-router";
+import { sidbarLink } from "../../utils/links";
+import useAuthStore from "../../store/auth-store";
+
+const Sidebar = () => {
+  const user = useAuthStore((state) => state.user);
+  return (
+    <div className="bg-green-950 w-48 text-white">
+      {/* Profile */}
+      <div className="flex flex-col items-center gap-2 py-12">
+        <User size={48} />
+        <span className="text-lg">{user && user.email}</span>
+        <span className="text-sm">{user && user.role}</span>
+      </div>
+      {/* /Profile */}
+
+      {/* Navlink */}
+      {sidbarLink.map((item) => {
+        return (
+          <div className="py-1 mx-2">
+            <Link
+              className="flex items-center hover:bg-green-700 hover:duration-200
+              rounded-sm px-3 py-1 gap-2"
+              to={item.link}
+            >
+              <span className="text-xl">{item.icon}</span>
+              {item.label}
+            </Link>
+          </div>
+        );
+      })}
+
+      {/* /Navlink */}
+    </div>
+  );
+};
+export default Sidebar;
+```
+## Step 21 Logout
+ 
+
+
 
