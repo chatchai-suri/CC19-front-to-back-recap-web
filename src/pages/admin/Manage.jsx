@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../../store/auth-store";
 import axios from "axios";
-import { actionListUser, actionUpdateRole } from "../../api/user";
-import { LucideTrash2, Trash2 } from "lucide-react";
+import { actionDeleteUser, actionListUser, actionUpdateRole } from "../../api/user";
+import { LucideTrash2, Trash, Trash2, Trash2Icon } from "lucide-react";
 import { createAlert } from "../../utils/createAlert";
+import Swal from "sweetalert2";
 
 function Manage() {
   const token = useAuthStore((state) => state.token);
@@ -33,6 +34,29 @@ function Manage() {
       const res = await actionUpdateRole(token, {id, role})
       createAlert("success", "Update Role Success!!!")
       console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const hdlDeleteUser = async (token, id) => {
+    console.log(token, id)
+    try {
+      Swal.fire({
+        icon: "info",
+        text: "Are you sure",
+        // showDenyButton: true,
+        showCancelButton: true,
+      }).then( async (data)=>{
+        console.log(data.isConfirmed)
+        if(data.isConfirmed){
+          // true
+          const res = await actionDeleteUser(token, id)
+          console.log(res)
+          createAlert("success", "Delete Success!!!")
+          hdlFetchUsers(token)
+        }
+      })
     } catch (error) {
       console.log(error)
     }
@@ -69,7 +93,12 @@ function Manage() {
                 </select>
                 {/* /Select */}
               </td>
-              <td><LucideTrash2 color="red" /> </td>
+              <td>
+                <Trash2Icon 
+                  onClick={()=> hdlDeleteUser(token, item.id)}
+                  color="red" 
+                /> 
+              </td>
 
             </tr>
           );
