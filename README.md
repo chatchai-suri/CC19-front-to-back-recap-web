@@ -1814,7 +1814,246 @@ function Logout() {
 
 export default Logout;
 ```
-## Step 22 Manage user
+## Step 22 Manage user [listAllUser]
+### 22.1 create draft page Manage.jsx
+/src/pages/admin/Manage.jsx
+```jsx
+const Manage = () => {
+  // JS
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Song</th>
+            <th>Artist</th>
+            <th>Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>The Sliding Mr. Bones (Next Stop, Pottersville)</td>
+            <td>Malcolm Lockyer</td>
+            <td>1961</td>
+          </tr>
+          <tr>
+            <td>Witchy Woman</td>
+            <td>The Eagles</td>
+            <td>1972</td>
+          </tr>
+          <tr>
+            <td>Shining Star</td>
+            <td>Earth, Wind, and Fire</td>
+            <td>1975</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+export default Manage;
+```
+### 22.2 prepare api function to get list of all user from backend
+/src/api/user.jsx
+```jsx
+import axios from "axios";
+
+export const actionListUsers = () => {
+  return axios.get("http://localhost:8000/api/users");
+};
+```
+### 22.3 update this function to Manage.jsx
+/src/pages/admin/Manage.jsx
+```jsx
+import { useEffect } from "react";
+import { actionListUsers } from "../../../api/user";
+
+const Manage = () => {
+  // JS
+
+  useEffect(() => {
+    // code
+    hdlFetchUsers();
+  }, []);
+
+  const hdlFetchUsers = async () => {
+    try {
+      const res = await actionListUsers();
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Song</th>
+            <th>Artist</th>
+            <th>Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>The Sliding Mr. Bones (Next Stop, Pottersville)</td>
+            <td>Malcolm Lockyer</td>
+            <td>1961</td>
+          </tr>
+          <tr>
+            <td>Witchy Woman</td>
+            <td>The Eagles</td>
+            <td>1972</td>
+          </tr>
+          <tr>
+            <td>Shining Star</td>
+            <td>Earth, Wind, and Fire</td>
+            <td>1975</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+export default Manage;
+```
+### 22.4 correct problem of token missing, by send token to api by zustand
+both Manage.jsx and function actionListUser
+#### 22.4.1
+/src/pages/admin/Manage.jsx
+```jsx
+import { useEffect } from "react";
+import { actionListUsers } from "../../../api/user";
+import useAuthStore from "../../store/auth-store";
+
+const Manage = () => {
+  // JS
+  const token = useAuthStore((state) => state.token);
+  useEffect(() => {
+    // code
+    hdlFetchUsers(token);
+  }, []);
+
+  const hdlFetchUsers = async (token) => {
+    try {
+      const res = await actionListUsers(token);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>Song</th>
+            <th>Artist</th>
+            <th>Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>The Sliding Mr. Bones (Next Stop, Pottersville)</td>
+            <td>Malcolm Lockyer</td>
+            <td>1961</td>
+          </tr>
+          <tr>
+            <td>Witchy Woman</td>
+            <td>The Eagles</td>
+            <td>1972</td>
+          </tr>
+          <tr>
+            <td>Shining Star</td>
+            <td>Earth, Wind, and Fire</td>
+            <td>1975</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+export default Manage;
+```
+#### 22.4.2 function actionGetUser
+/src/api.user.jsx
+```js
+import axios from "axios";
+
+export const actionListUsers = (token) => {
+  return axios.get("http://localhost:8000/api/users", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+```
+### 22.4.3 map user list
+/src/pages/Manage.jsx
+```jsx
+import { useEffect, useState } from "react";
+import { actionListUsers } from "../../../api/user";
+import useAuthStore from "../../store/auth-store";
+import { Delete, DeleteIcon, Trash2 } from "lucide-react";
+
+const Manage = () => {
+  // JS
+  const [users, setUsers] = useState([]);
+  const token = useAuthStore((state) => state.token);
+
+  useEffect(() => {
+    // code
+    hdlFetchUsers(token);
+  }, []);
+
+  const hdlFetchUsers = async (token) => {
+    try {
+      const res = await actionListUsers(token);
+      setUsers(res.data.result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user, index) => {
+            return (
+              <tr key={user.id}>
+                <td>{index + 1}</td>
+                <td>{user.firstname}</td>
+                <td>{user.lastname}</td>
+                <td>{user.email}</td>
+                <td>{user.role}</td>
+                <td>
+                  <Trash2 color="red" />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+export default Manage;
+```
+## Step 23 Update Role
+
 
 
 
