@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import useAuthStore from "../../store/auth-store";
 import axios from "axios";
-import { actionListUser } from "../../api/user";
-import { Trash2 } from "lucide-react";
+import { actionListUser, actionUpdateRole } from "../../api/user";
+import { LucideTrash2, Trash2 } from "lucide-react";
+import { createAlert } from "../../utils/createAlert";
 
 function Manage() {
   const token = useAuthStore((state) => state.token);
@@ -26,6 +27,17 @@ function Manage() {
   };
   console.log("users ==== ", users);
 
+  const hdlUpdateRole = async (token, id, role) => {
+    console.log("token, id, role")
+    try {
+      const res = await actionUpdateRole(token, {id, role})
+      createAlert("success", "Update Role Success!!!")
+      console.log(res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <table className="table-fixed">
       <thead>
@@ -46,19 +58,22 @@ function Manage() {
               <td>{item.firstname}</td>
               <td>{item.lastname}</td>
               <td>{item.email}</td>
-              <td>{item.role}</td>
-              <td> <Trash2 color="red" /> </td>
+              <td> 
+                {/* Select */}
+                <select
+                onChange={(e)=>hdlUpdateRole(token, item.id, e.target.value)}
+                defaultValue={item.role}
+                >
+                  <option>USER</option>
+                  <option>ADMIN</option>
+                </select>
+                {/* /Select */}
+              </td>
+              <td><LucideTrash2 color="red" /> </td>
+
             </tr>
           );
         })}
-        <tr>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-          <td>1</td>
-        </tr>
       </tbody>
     </table>
   );
